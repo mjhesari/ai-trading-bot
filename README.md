@@ -35,8 +35,8 @@ npm install
 npm run dev
 ```
 
-- UI: http://localhost:3000  
-- API docs: http://localhost:8000/docs  
+- UI: http://localhost:3000
+- API docs: http://localhost:8000/docs
 
 Default `DATA_SOURCE=yahoo` → charts, signals, and backtests all use **real FX OHLC**.
 
@@ -59,10 +59,10 @@ Look for `"source":"yahoo"` in responses.
 
 See **[docs/deploy.md](docs/deploy.md)**.
 
-| App | Host |
-|-----|------|
-| `dashboard/` | Vercel (`NEXT_PUBLIC_ENGINE_URL=https://your-engine`) |
-| `trading-engine/` | Render / Railway / Fly / any Linux VPS (Docker) |
+| App               | Host                                                  |
+| ----------------- | ----------------------------------------------------- |
+| `dashboard/`      | Vercel (`NEXT_PUBLIC_ENGINE_URL=https://your-engine`) |
+| `trading-engine/` | Render / Railway / Fly / any Linux VPS (Docker)       |
 
 CORS already allows `https://*.vercel.app`.
 
