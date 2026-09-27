@@ -13,7 +13,7 @@ export function useMarket(symbol = "EURUSD") {
     setLoading(true);
     setError(null);
     try {
-      const data = await getMarket(symbol, true);
+      const data = await getMarket(symbol, { source: "auto", count: 500 });
       setCandles(data.candles);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load market");

@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: trading-engine
+    runtime: docker
+    dockerfilePath: ./trading-engine/Dockerfile
+    dockerContext: ./trading-engine
+    plan: starter
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 8000
+      - key: DATA_SOURCE
+        value: yahoo
+      - key: CORS_ORIGINS
+        sync: false
+      - key: CORS_ORIGIN_REGEX
+        value: https://.*\.vercel\.app
+      - key: TWELVE_DATA_API_KEY
+        sync: false

@@ -1,4 +1,4 @@
-"""Backtest runner — load data, run strategy, return report."""
+"""Backtest runner — load real market data, run strategy, return report."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from uuid import uuid4
 from app.backtest.engine import BacktestEngine
 from app.backtest.reports import build_report
 from app.core.config import get_settings
-from app.market.data import fetch_yahoo_data, generate_sample_data
+from app.market.provider import load_candles
 from app.market.symbol import normalize_symbol
 from app.market.timeframe import normalize_timeframe
 from app.strategy.strategies.smc_v1 import SMCv1Strategy
@@ -23,23 +23,24 @@ class BacktestRunner:
         *,
         symbol: str = "EURUSD",
         timeframe: str = "1h",
-        use_sample: bool = True,
+        use_sample: bool = False,
+        source: str | None = None,
         start: str | None = None,
         end: str | None = None,
-        sample_n: int = 800,
+        sample_n: int = 1000,
     ) -> dict[str, Any]:
         settings = get_settings()
         symbol = normalize_symbol(symbol)
         timeframe = normalize_timeframe(timeframe)
 
-        if use_sample:
-            candles = generate_sample_data(n=sample_n)
-        else:
-            candles = fetch_yahoo_data(symbol, timeframe=timeframe, period=settings.lookback_period)
-            if start:
-                candles = candles[candles.index >= start]
-            if end:
-                candles = candles[candles.index <= end]
+        resolved = "sample" if use_sample else source
+
+        bundle = load_candles(symbol, timeframe, count=sample_n, source=resolved)
+        candles = bundle.candles
+        if start:
+            candles = candles[candles.index >= start]
+        if end:
+            candles = candles[candles.index <= end]
 
         strategy = SMCv1Strategy()
         analyzed = strategy.analyze(candles)
@@ -55,6 +56,9 @@ class BacktestRunner:
             metrics=result["metrics"],
             trades=result["trades"],
         )
+        report["source"] = bundle.source
+        report["message"] = bundle.message
+        report["bars"] = len(candles)
         self._store[report["id"]] = report
         return report
 

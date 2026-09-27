@@ -1,48 +1,54 @@
-"""Market data API."""
+"""Market data API — real Yahoo / Twelve Data OHLC."""
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 
-from app.core.config import get_settings
-from app.market.data import fetch_yahoo_data, generate_sample_data
+from app.market.provider import frame_to_rows, list_watchlist, load_candles
 from app.market.symbol import normalize_symbol
-from app.market.timeframe import normalize_timeframe
+from app.market.timeframe import TIMEFRAME_OPTIONS, normalize_timeframe
 
 router = APIRouter(tags=["market"])
+
+
+@router.get("/api/market/timeframes")
+def list_timeframes() -> dict:
+    return {"timeframes": TIMEFRAME_OPTIONS}
+
+
+@router.get("/api/market/pairs")
+def list_pairs() -> dict:
+    pairs = list_watchlist()
+    return {
+        "source": "watchlist",
+        "pairs": pairs,
+        "details": [{"symbol": p} for p in pairs],
+    }
 
 
 @router.get("/api/market/{symbol}")
 def get_market(
     symbol: str,
     timeframe: str | None = None,
-    use_sample: bool = Query(True),
-    limit: int = Query(100, ge=1, le=2000),
+    source: str | None = Query(None, description="yahoo|twelvedata|auto|sample — default: engine Settings"),
+    count: int = Query(500, ge=20, le=5000),
 ) -> dict:
-    settings = get_settings()
-    symbol = normalize_symbol(symbol)
-    timeframe = normalize_timeframe(timeframe or settings.default_timeframe)
+    try:
+        bundle = load_candles(
+            symbol,
+            timeframe=timeframe or "1h",
+            count=count,
+            source=source,
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    if use_sample:
-        candles = generate_sample_data(n=max(limit, 200))
-    else:
-        candles = fetch_yahoo_data(symbol, timeframe=timeframe, period=settings.lookback_period)
-
-    tail = candles.tail(limit)
-    rows = [
-        {
-            "time": str(idx),
-            "open": float(row.open),
-            "high": float(row.high),
-            "low": float(row.low),
-            "close": float(row.close),
-            "volume": float(row.volume),
-        }
-        for idx, row in tail.iterrows()
-    ]
+    rows = frame_to_rows(bundle.candles)
     return {
-        "symbol": symbol,
-        "timeframe": timeframe,
+        "symbol": normalize_symbol(bundle.symbol),
+        "timeframe": normalize_timeframe(bundle.timeframe),
+        "source": bundle.source,
+        "message": bundle.message,
         "count": len(rows),
         "candles": rows,
     }

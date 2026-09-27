@@ -28,6 +28,9 @@ services:
       DATABASE_URL: postgresql://trading:trading@postgres:5432/trading
       REDIS_URL: redis://redis:6379/0
       CORS_ORIGINS: http://localhost:3000
+      CORS_ORIGIN_REGEX: https://.*\.vercel\.app
+      DATA_SOURCE: yahoo
+      APP_ENV: production
     ports:
       - "8000:8000"
     depends_on:

@@ -1,4 +1,4 @@
-"""Market data loading: sample generator and Yahoo Finance."""
+"""Market data: Yahoo Finance (primary on Mac/Linux/VPS) + sample fallback."""
 
 from __future__ import annotations
 
@@ -8,6 +8,36 @@ import pandas as pd
 from app.market.candle import normalize_ohlc
 from app.market.symbol import to_yahoo_symbol
 from app.market.timeframe import normalize_timeframe
+
+# Yahoo interval limits — pick a period that actually returns enough bars
+_TF_PERIOD = {
+    "1m": "7d",
+    "5m": "60d",
+    "15m": "60d",
+    "30m": "60d",
+    "1h": "730d",
+    "2h": "730d",  # fetched as 1h then resampled
+    "4h": "730d",  # fetched as 1h then resampled
+    "1d": "5y",
+    "1w": "10y",
+}
+
+_TF_YAHOO_INTERVAL = {
+    "1m": "1m",
+    "5m": "5m",
+    "15m": "15m",
+    "30m": "30m",
+    "1h": "1h",
+    "2h": "1h",
+    "4h": "1h",
+    "1d": "1d",
+    "1w": "1wk",
+}
+
+_TF_RESAMPLE = {
+    "2h": "2h",
+    "4h": "4h",
+}
 
 
 def generate_sample_data(n: int = 800, seed: int = 42, start_price: float = 1.1000) -> pd.DataFrame:
@@ -49,14 +79,53 @@ def generate_sample_data(n: int = 800, seed: int = 42, start_price: float = 1.10
     return normalize_ohlc(df)
 
 
-def fetch_yahoo_data(symbol: str, timeframe: str = "1h", period: str = "60d") -> pd.DataFrame:
+def _resample_ohlc(df: pd.DataFrame, rule: str) -> pd.DataFrame:
+    agg = df.resample(rule).agg(
+        {
+            "open": "first",
+            "high": "max",
+            "low": "min",
+            "close": "last",
+            "volume": "sum",
+        }
+    )
+    return normalize_ohlc(agg.dropna())
+
+
+def fetch_yahoo_data(
+    symbol: str,
+    timeframe: str = "1h",
+    period: str | None = None,
+) -> pd.DataFrame:
+    """Download real OHLC from Yahoo Finance (works on Mac / Linux / VPS)."""
     import yfinance as yf
 
-    ticker = to_yahoo_symbol(symbol)
     tf = normalize_timeframe(timeframe)
-    df = yf.download(ticker, period=period, interval=tf, progress=False)
+    ticker = to_yahoo_symbol(symbol)
+    interval = _TF_YAHOO_INTERVAL[tf]
+    use_period = period or _TF_PERIOD[tf]
+
+    df = yf.download(ticker, period=use_period, interval=interval, progress=False, auto_adjust=False)
     if df.empty:
-        raise ValueError(f"No data for {ticker} ({tf})")
+        # one retry with alternate period for intraday
+        alt = "60d" if tf in {"1h", "2h", "4h"} else "1y"
+        df = yf.download(ticker, period=alt, interval=interval, progress=False, auto_adjust=False)
+    if df.empty:
+        raise ValueError(f"Yahoo returned no data for {ticker} ({tf})")
+
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
-    return normalize_ohlc(df)
+
+    out = normalize_ohlc(df)
+    if not isinstance(out.index, pd.DatetimeIndex):
+        out.index = pd.to_datetime(out.index)
+    if out.index.tz is None:
+        out.index = out.index.tz_localize("UTC")
+    else:
+        out.index = out.index.tz_convert("UTC")
+    out.index.name = "time"
+
+    if tf in _TF_RESAMPLE:
+        out = _resample_ohlc(out, _TF_RESAMPLE[tf])
+
+    return out
