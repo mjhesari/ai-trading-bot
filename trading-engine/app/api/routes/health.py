@@ -2,16 +2,24 @@
 
 from fastapi import APIRouter
 
-from app.core.config import get_settings
+from app.core.runtime_config import get_runtime_config, public_settings_dict
+from app.market.provider import list_watchlist
 
 router = APIRouter(tags=["health"])
 
 
 @router.get("/api/health")
 def health() -> dict:
-    settings = get_settings()
+    runtime = get_runtime_config()
     return {
         "status": "ok",
-        "service": settings.app_name,
-        "env": settings.app_env,
+        "service": "trading-engine",
+        "dataSource": runtime.data_source,
+        "providers": {
+            "yahoo": True,
+            "twelvedata": bool(runtime.twelve_data_api_key),
+            "sample": True,
+        },
+        "settings": public_settings_dict(),
+        "pairs": list_watchlist()[:8],
     }

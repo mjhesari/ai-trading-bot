@@ -15,6 +15,9 @@ export type TradingSignal = {
 export type SignalsResponse = {
   symbol: string;
   timeframe: string;
+  source?: string;
+  message?: string | null;
+  bars?: number;
   count: number;
   signals: TradingSignal[];
 };

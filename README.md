@@ -1,62 +1,79 @@
 # AI Trading Bot
 
-Two coordinated apps: **Python trading engine** (SMC + price action) and **Next.js dashboard**.
+Python **trading-engine** (SMC + real market APIs) + Next.js **dashboard**.
+
+Works fully on **Mac** — no Windows. Deploy UI to **Vercel**, engine to a **Linux VPS**.
 
 ## Structure
 
 ```
 ai-trading-bot/
-├── trading-engine/   # FastAPI + strategy + backtest
-├── dashboard/        # Next.js UI
-├── data/             # local datasets
-├── docker/           # SQL init + docker helpers
-├── docs/
+├── trading-engine/   # FastAPI + Yahoo/Twelve Data + SMC
+├── dashboard/        # Next.js → Vercel
+├── docs/deploy.md    # Vercel + VPS steps
+├── render.yaml       # optional Render blueprint
 ├── docker-compose.yml
 └── .env.example
 ```
 
-## Quick start (local)
+## Mac local (real Yahoo data)
 
 ```bash
 cp .env.example .env
 
-# Engine
+# Terminal 1 — engine
 cd trading-engine
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# Dashboard (other terminal)
+# Terminal 2 — UI
 cd dashboard
 cp .env.local.example .env.local
 npm install
 npm run dev
 ```
 
-- API: http://localhost:8000/docs  
 - UI: http://localhost:3000  
+- API docs: http://localhost:8000/docs  
 
-## Docker
+Default `DATA_SOURCE=yahoo` → charts, signals, and backtests all use **real FX OHLC**.
+
+Optional second provider: set `TWELVE_DATA_API_KEY` in `.env` ([twelvedata.com](https://twelvedata.com)).
+
+### Quick API checks
 
 ```bash
-docker compose up --build
+curl -s http://localhost:8000/api/health
+curl -s "http://localhost:8000/api/market/EURUSD?timeframe=1h&source=yahoo&count=50"
+curl -s "http://localhost:8000/api/signals?symbol=EURUSD&source=yahoo"
+curl -s -X POST http://localhost:8000/api/backtest \
+  -H "Content-Type: application/json" \
+  -d '{"symbol":"EURUSD","timeframe":"1h","source":"yahoo","sampleN":800}'
 ```
 
-Postgres and Redis start with the stack. MT5 is intentionally outside Docker (Windows/VPS).
+Look for `"source":"yahoo"` in responses.
 
-## V1 scope
+## Deploy
 
-- Working SMC V1 pipeline + signal model + backtest metrics
-- FastAPI routes for health / signals / market / backtest
-- Minimal dashboard pages for Signals and Backtest
-- ML / live MT5 / WebSocket: stubs only
+See **[docs/deploy.md](docs/deploy.md)**.
+
+| App | Host |
+|-----|------|
+| `dashboard/` | Vercel (`NEXT_PUBLIC_ENGINE_URL=https://your-engine`) |
+| `trading-engine/` | Render / Railway / Fly / any Linux VPS (Docker) |
+
+CORS already allows `https://*.vercel.app`.
 
 ## Tests
 
 ```bash
 cd trading-engine
-pytest
+source .venv/bin/activate
+pytest -q
 ```
 
 ## Disclaimer
 
-Research tooling only — not financial advice. Validate on demo before any live trading.
+Research tooling only — not financial advice.

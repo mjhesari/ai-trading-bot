@@ -1,31 +1,31 @@
-# Architecture (V1)
+# Architecture
 
 ## Apps
 
-Two independent applications, coordinated over HTTP:
-
-1. **trading-engine** (Python / FastAPI) — market data, SMC, price action, strategy, risk, backtest, stubs for MT5/ML/execution
-2. **dashboard** (Next.js) — signals list, backtest runner, placeholders for charts/settings
+1. **trading-engine** (Python / FastAPI) — Yahoo/Twelve Data OHLC, SMC, signals, backtest
+2. **dashboard** (Next.js) — charts, signals, backtest UI → deploy on **Vercel**
 
 ## Data flow
 
 ```
-Sample/Yahoo → Market → SMC (swing/structure/liquidity/FVG/OB) → Price Action → SMCv1 → Signals → Risk
-                                                                              ↘ Backtest
-FastAPI exposes results → Next.js dashboard
+Yahoo Finance (real) ──┐
+Twelve Data (optional)─┼→ load_candles → SMC pipeline → Signals / Backtest
+sample (fallback only)─┘
+                              ↓
+                     FastAPI → Next.js dashboard
 ```
 
-## Boundaries
+Default `DATA_SOURCE=yahoo` on Mac, Linux, and VPS. No Windows dependency.
 
-- FastAPI lives **inside** trading-engine (no third backend).
-- MT5 terminal is **not** containerized; connect later from Windows/VPS.
-- ML folders exist but are unused until rule-based edge is proven.
-- Postgres schema is provisioned; V1 signals/backtests are in-memory.
+## Deploy
+
+- Dashboard → Vercel
+- Engine → Linux VPS / Render / Railway (see `docs/deploy.md`)
 
 ## Main API
 
 - `GET /api/health`
-- `GET /api/signals`
-- `GET /api/market/{symbol}`
-- `POST /api/backtest`
-- `GET /api/backtest/{id}`
+- `GET /api/signals?source=yahoo`
+- `GET /api/market/pairs`
+- `GET /api/market/{symbol}?source=yahoo`
+- `POST /api/backtest` body `{ "source": "yahoo", ... }`

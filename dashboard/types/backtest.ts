@@ -19,6 +19,9 @@ export type BacktestReport = {
   symbol: string;
   timeframe: string;
   createdAt: string;
+  source?: string;
+  message?: string | null;
+  bars?: number;
   metrics: BacktestMetrics;
   trades: Array<Record<string, unknown>>;
 };
@@ -26,6 +29,7 @@ export type BacktestReport = {
 export type BacktestRequest = {
   symbol: string;
   timeframe: string;
-  useSample: boolean;
+  useSample?: boolean;
+  source?: string;
   sampleN?: number;
 };
