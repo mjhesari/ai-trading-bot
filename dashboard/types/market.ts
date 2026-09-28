@@ -14,6 +14,26 @@ export type MarketResponse = {
   message?: string | null;
   count: number;
   candles: Candle[];
+  livePrice?: number | null;
+};
+
+export type QuoteResponse = {
+  symbol: string;
+  price: number;
+  asOf?: string | null;
+  source: string;
+  ts: number;
+  barOpenMs?: number;
+  timeframe?: string;
+  m1Count?: number;
+  forming?: {
+    time: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+  };
 };
 
 export type PairsResponse = {

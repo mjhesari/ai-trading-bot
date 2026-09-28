@@ -566,10 +566,108 @@ th {
   font-size: 0.82rem;
 }
 
+.chart-head-actions {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tv-chart-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.tv-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.85rem;
+  justify-content: space-between;
+}
+
+.tv-tool-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tv-tool {
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(7, 11, 20, 0.55);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
+}
+
+.tv-tool:hover {
+  color: var(--text);
+  border-color: rgba(37, 99, 235, 0.45);
+}
+
+.tv-tool.active {
+  color: #f8fbff;
+  background: rgba(29, 78, 216, 0.45);
+  border-color: rgba(37, 99, 235, 0.7);
+}
+
+.tv-tool.indicator.active {
+  background: rgba(8, 12, 10, 0.72);
+}
+
+.tv-tool.danger:hover {
+  color: #ffb4b4;
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+.tv-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.tv-live-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: #556;
+}
+
+.tv-live-dot.on {
+  background: var(--buy);
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
+}
+
+.tv-live-dot.pulse {
+  animation: tv-pulse 0.6s ease;
+}
+
+@keyframes tv-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+  }
+}
+
 .tv-chart-wrap {
   position: relative;
-  height: min(62vh, 560px);
-  min-height: 380px;
+  height: min(68vh, 620px);
+  min-height: 420px;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -585,7 +683,7 @@ th {
 
 .tv-chart-watermark {
   position: absolute;
-  top: 1rem;
+  top: 2.4rem;
   left: 1.1rem;
   z-index: 2;
   font-size: clamp(1.6rem, 4vw, 2.4rem);
@@ -593,6 +691,73 @@ th {
   letter-spacing: -0.03em;
   color: rgba(232, 238, 248, 0.08);
   pointer-events: none;
+}
+
+.tv-ohlc-hud {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.85rem;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.85rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  background: rgba(7, 11, 20, 0.72);
+  border: 1px solid rgba(140, 180, 160, 0.12);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.tv-ohlc-hud .sym {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.tv-ohlc-hud b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tv-measure-badge {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.85rem;
+  z-index: 3;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(7, 11, 20, 0.78);
+  border: 1px solid rgba(94, 224, 168, 0.35);
+  color: #5ee0a8;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+
+.tv-hint {
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+.stat-card .value.tick {
+  animation: price-tick 0.45s ease;
+}
+
+@keyframes price-tick {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  40% {
+    transform: translateY(-2px);
+    opacity: 0.75;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .pair-chips {
