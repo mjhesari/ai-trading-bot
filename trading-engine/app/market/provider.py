@@ -34,6 +34,7 @@ DEFAULT_PAIRS = [
     "EURCHF",
     "GBPCHF",
     "XAUUSD",
+    "SPX",
 ]
 
 

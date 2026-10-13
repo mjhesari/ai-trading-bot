@@ -12,6 +12,32 @@ export type BacktestMetrics = {
   netProfit: number;
   returnPct: number;
   equityCurve: number[];
+  initialBalance?: number;
+  riskPerTradePct?: number;
+  spreadPips?: number;
+  commissionPerLot?: number;
+  avgLots?: number;
+};
+
+export type BacktestTrade = {
+  time?: string;
+  entryTime?: string;
+  exitTime?: string;
+  direction?: string;
+  entry?: number;
+  sl?: number;
+  tp?: number;
+  tp1?: number;
+  tp2?: number;
+  lots?: number;
+  riskAmount?: number;
+  spreadPips?: number;
+  commission?: number;
+  outcome?: string;
+  exit?: number;
+  r_multiple?: number;
+  pnl?: number;
+  balance?: number;
 };
 
 export type BacktestReport = {
@@ -22,14 +48,24 @@ export type BacktestReport = {
   source?: string;
   message?: string | null;
   bars?: number;
+  strategy?: string;
+  strategyLabel?: string;
   metrics: BacktestMetrics;
-  trades: Array<Record<string, unknown>>;
+  trades: BacktestTrade[];
 };
 
 export type BacktestRequest = {
   symbol: string;
   timeframe: string;
+  strategy?: string;
   useSample?: boolean;
   source?: string;
   sampleN?: number;
+  initialBalance?: number;
+  riskPerTradePct?: number;
+  spreadPips?: number;
+  commissionPerLot?: number;
+  minLot?: number;
+  maxLot?: number;
+  partialClosePct?: number;
 };

@@ -5,6 +5,7 @@ from __future__ import annotations
 import pandas as pd
 
 from app.signals.models import TradingSignal
+from app.signals.outcome import grade_from_index
 from app.signals.scorer import SignalScorer
 
 
@@ -37,5 +38,9 @@ class SignalGenerator:
                 reasons=reasons,
                 time=idx.to_pydatetime() if hasattr(idx, "to_pydatetime") else None,
             )
-            signals.append(self.scorer.score(sig))
+            scored = self.scorer.score(sig)
+            pos = df.index.get_loc(idx)
+            if not isinstance(pos, int):
+                pos = int(pos.start) if hasattr(pos, "start") else int(pos)
+            signals.append(grade_from_index(scored, df, pos))
         return signals

@@ -14,8 +14,14 @@ export const DEFAULT_PAIRS = [
   "EURCHF",
   "GBPCHF",
   "XAUUSD",
+  "SPX",
 ] as const;
 
+const PAIR_LABELS: Record<string, string> = {
+  SPX: "SPX · S&P 500",
+  XAUUSD: "XAUUSD · Gold",
+};
+
 export function toPairOptions(pairs: string[]) {
-  return pairs.map((p) => ({ value: p, label: p }));
+  return pairs.map((p) => ({ value: p, label: PAIR_LABELS[p] ?? p }));
 }

@@ -1,4 +1,4 @@
-"""Backtest runner — load real market data, run strategy, return report."""
+"""Backtest runner — load real market data, run a named strategy, return report."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from app.core.config import get_settings
 from app.market.provider import load_candles
 from app.market.symbol import normalize_symbol
 from app.market.timeframe import normalize_timeframe
-from app.strategy.strategies.smc_v1 import SMCv1Strategy
+from app.strategy.registry import STRATEGIES, resolve_strategy
 
 
 class BacktestRunner:
@@ -28,10 +28,19 @@ class BacktestRunner:
         start: str | None = None,
         end: str | None = None,
         sample_n: int = 1000,
+        strategy: str | None = None,
+        initial_balance: float | None = None,
+        risk_pct: float | None = None,
+        spread_pips: float = 0.8,
+        commission_per_lot: float = 7.0,
+        min_lot: float | None = None,
+        max_lot: float | None = None,
+        partial_close_pct: float = 0.5,
     ) -> dict[str, Any]:
         settings = get_settings()
         symbol = normalize_symbol(symbol)
         timeframe = normalize_timeframe(timeframe)
+        strategy_id, strat = resolve_strategy(strategy, timeframe=timeframe)
 
         resolved = "sample" if use_sample else source
 
@@ -42,11 +51,16 @@ class BacktestRunner:
         if end:
             candles = candles[candles.index <= end]
 
-        strategy = SMCv1Strategy()
-        analyzed = strategy.analyze(candles)
+        analyzed = strat.analyze(candles)
         engine = BacktestEngine(
-            initial_balance=settings.initial_balance,
-            risk_pct=settings.risk_per_trade_pct,
+            symbol=symbol,
+            initial_balance=initial_balance if initial_balance is not None else settings.initial_balance,
+            risk_pct=risk_pct if risk_pct is not None else settings.risk_per_trade_pct,
+            spread_pips=spread_pips,
+            commission_per_lot=commission_per_lot,
+            min_lot=min_lot,
+            max_lot=max_lot,
+            partial_close_pct=partial_close_pct,
         )
         result = engine.run(analyzed)
         report = build_report(
@@ -59,6 +73,8 @@ class BacktestRunner:
         report["source"] = bundle.source
         report["message"] = bundle.message
         report["bars"] = len(candles)
+        report["strategy"] = strategy_id
+        report["strategyLabel"] = str(STRATEGIES[strategy_id]["label"])
         self._store[report["id"]] = report
         return report
 

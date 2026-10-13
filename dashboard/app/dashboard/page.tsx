@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { SessionClock } from "@/components/market/SessionClock";
 import { Button } from "@/components/ui/button";
 import { useSignals } from "@/hooks/use-signals";
 import { getHealth } from "@/services/trading-engine";
 
 export default function DashboardPage() {
-  const { signals, loading, error, source } = useSignals("EURUSD", "1h");
+  const { signals, loading, error, source, stats: hitStats } = useSignals("EURUSD", "1h");
   const [engineOk, setEngineOk] = useState<boolean | null>(null);
   const [dataSource, setDataSource] = useState<string>("yahoo");
 
@@ -65,11 +66,18 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="stat-card">
-          <div className="label">Avg conf</div>
-          <div className="value">{stats.avgConf || "—"}</div>
-          <div className="hint">confluence score</div>
+          <div className="label">Hit rate</div>
+          <div className="value">
+            {hitStats?.winRate != null ? `${Math.round(hitStats.winRate * 100)}%` : stats.avgConf || "—"}
+          </div>
+          <div className="hint">
+            {hitStats ? `${hitStats.wins}W / ${hitStats.losses}L` : "confluence"}
+            {hitStats?.open ? ` · ${hitStats.open} open` : ""}
+          </div>
         </div>
       </div>
+
+      <SessionClock />
 
       {error ? <p className="error">{error}</p> : null}
 

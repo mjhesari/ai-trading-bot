@@ -21,10 +21,12 @@ def compute_metrics(trades: pd.DataFrame, equity_curve: list[float], initial_bal
             "netProfit": 0.0,
             "returnPct": 0.0,
             "equityCurve": equity_curve,
+            "initialBalance": initial_balance,
+            "avgLots": 0.0,
         }
 
-    wins = trades[trades["outcome"] == "TP"]
-    losses = trades[trades["outcome"] == "SL"]
+    wins = trades[trades["pnl"] > 0]
+    losses = trades[trades["pnl"] < 0]
     total = len(trades)
     win_rate = len(wins) / total * 100
 
@@ -60,4 +62,5 @@ def compute_metrics(trades: pd.DataFrame, equity_curve: list[float], initial_bal
         "netProfit": round(final_balance - initial_balance, 2),
         "returnPct": round((final_balance - initial_balance) / initial_balance * 100, 2),
         "equityCurve": [round(float(x), 2) for x in equity_curve],
+        "avgLots": round(float(trades["lots"].mean()), 2) if "lots" in trades.columns else 0.0,
     }

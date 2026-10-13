@@ -18,6 +18,7 @@ import type { EngineSettings, SourceTestResult } from "@/types/settings";
 export default function SettingsPage() {
   const [settings, setSettings] = useState<EngineSettings | null>(null);
   const [dataSource, setDataSource] = useState("yahoo");
+  const [sessionTimezone, setSessionTimezone] = useState("UTC");
   const [apiKey, setApiKey] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export default function SettingsPage() {
     const s = await getEngineSettings();
     setSettings(s);
     setDataSource(s.dataSource);
+    setSessionTimezone(s.sessionTimezone || "UTC");
   }, []);
 
   useEffect(() => {
@@ -46,6 +48,7 @@ export default function SettingsPage() {
       const next = await updateEngineSettings(body);
       setSettings(next);
       setDataSource(next.dataSource);
+      setSessionTimezone(next.sessionTimezone);
       setApiKey("");
       setOkMsg(`Saved. Active source: ${next.dataSource}`);
     } catch (err) {
@@ -76,9 +79,27 @@ export default function SettingsPage() {
     try {
       const next = await updateEngineSettings({ clearTwelveDataApiKey: true });
       setSettings(next);
+      setSessionTimezone(next.sessionTimezone);
       setOkMsg("Twelve Data API key cleared");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Clear failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onSaveTimezone(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    setOkMsg(null);
+    try {
+      const next = await updateEngineSettings({ sessionTimezone });
+      setSettings(next);
+      setSessionTimezone(next.sessionTimezone);
+      setOkMsg(`Session desk set to ${next.sessionTimezoneLabel} (UTC${next.sessionOffset})`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
     } finally {
       setBusy(false);
     }
@@ -89,7 +110,7 @@ export default function SettingsPage() {
       <div className="page-head">
         <div>
           <h1>Settings</h1>
-          <p>Switch market source and manage Twelve Data API key.</p>
+          <p>Switch market source, session location, and Twelve Data API key.</p>
         </div>
       </div>
 
@@ -116,6 +137,15 @@ export default function SettingsPage() {
             </Badge>
           </div>
           <div className="hint">{settings?.twelveDataApiKeyMasked ?? "no key"}</div>
+        </div>
+        <div className="stat-card">
+          <div className="label">Session desk</div>
+          <div className="value" style={{ fontSize: "1.1rem" }}>
+            {settings?.sessionTimezoneLabel ?? "…"}
+          </div>
+          <div className="hint">
+            {settings?.sessionTimezone ?? "UTC"} · UTC{settings?.sessionOffset ?? ""}
+          </div>
         </div>
       </div>
 
@@ -170,6 +200,41 @@ export default function SettingsPage() {
             test → {test.source} · {test.symbol} {test.timeframe} · bars {test.bars}
             {test.lastClose != null ? ` · last ${test.lastClose}` : ""}
           </p>
+        ) : null}
+      </div>
+
+      <div className="panel">
+        <h2 className="panel-title">Session location</h2>
+        <p className="muted" style={{ marginTop: 0, lineHeight: 1.5 }}>
+          FX sessions stay on UTC (Sydney / Tokyo / London / New York). Pick your desk so those hours
+          show in local time — e.g. Tehran sees London as 10:30–19:30.
+        </p>
+        <form className="form-grid" onSubmit={(e) => void onSaveTimezone(e)}>
+          <FieldSelect
+            label="Desk timezone"
+            value={sessionTimezone}
+            onValueChange={setSessionTimezone}
+            options={(settings?.allowedTimezones ?? []).map((tz) => ({
+              value: tz.id,
+              label: `${tz.label} (UTC${tz.offset})`,
+            }))}
+          />
+          <Button type="submit" disabled={busy || !sessionTimezone}>
+            {busy ? "Saving…" : "Save timezone"}
+          </Button>
+        </form>
+        {settings?.sessions ? (
+          <div className="session-chip-row">
+            {settings.sessions.sessions.map((s) => (
+              <div key={s.id} className={`session-chip${s.active ? " active" : ""}`}>
+                <span className="session-chip-name">{s.label}</span>
+                <span className="session-chip-hours">
+                  {s.localStart}–{s.localEnd}
+                  <span className="muted"> · UTC {s.utcStart}–{s.utcEnd}</span>
+                </span>
+              </div>
+            ))}
+          </div>
         ) : null}
       </div>
     </main>
