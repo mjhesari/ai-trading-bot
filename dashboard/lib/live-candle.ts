@@ -42,7 +42,15 @@ export type FormingCandle = {
   volume: number;
 };
 
+export function priceDigits(symbol: string): number {
+  const s = symbol.toUpperCase();
+  if (s === "SPX" || s.includes("SPX") || s === "US500") return 2;
+  if (s.includes("JPY") || s.startsWith("XAU")) return 3;
+  return 5;
+}
+
 export function pipSize(symbol: string): number {
+  if (symbol.toUpperCase() === "SPX") return 0.01;
   if (symbol.includes("JPY")) return 0.001;
   if (symbol.startsWith("XAU")) return 0.01;
   return 0.00001;
@@ -50,7 +58,7 @@ export function pipSize(symbol: string): number {
 
 /** Round price to symbol precision so HUD/axis match the candle. */
 export function roundPrice(n: number, symbol: string): number {
-  const digits = symbol.includes("JPY") || symbol.startsWith("XAU") ? 3 : 5;
+  const digits = priceDigits(symbol);
   const f = 10 ** digits;
   return Math.round(n * f) / f;
 }

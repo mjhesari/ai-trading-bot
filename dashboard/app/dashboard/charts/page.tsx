@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FieldSelect } from "@/components/ui/field-select";
 import { useChartMarket } from "@/hooks/use-chart-market";
-import { roundPrice } from "@/lib/live-candle";
+import { toPairOptions } from "@/lib/pairs";
+import { priceDigits, roundPrice } from "@/lib/live-candle";
+import { SessionClock } from "@/components/market/SessionClock";
 import { DATA_SOURCES, TIMEFRAMES } from "@/lib/timeframes";
 
 const TradingChart = dynamic(
@@ -19,11 +21,6 @@ function formatAgo(ts: number | null) {
   if (sec < 5) return "just now";
   if (sec < 60) return `${sec}s ago`;
   return `${Math.floor(sec / 60)}m ago`;
-}
-
-function priceDigits(symbol: string) {
-  if (symbol.includes("JPY") || symbol.startsWith("XAU")) return 3;
-  return 5;
 }
 
 export default function ChartsPage() {
@@ -70,7 +67,7 @@ export default function ChartsPage() {
     highPrice != null && lowPrice != null ? roundPrice(highPrice - lowPrice, symbol) : null;
   const barsCount = candles.length;
 
-  const pairOptions = pairs.map((p) => ({ value: p, label: p }));
+  const pairOptions = toPairOptions(pairs);
 
   return (
     <main className="page chart-page">
@@ -114,6 +111,8 @@ export default function ChartsPage() {
           {m1Count != null ? ` · ${m1Count}m1` : ""} · {formatAgo(lastUpdated)}
         </Badge>
       </div>
+
+      <SessionClock compact />
 
       <div className="grid-stats">
         <div className="stat-card">
@@ -183,7 +182,7 @@ export default function ChartsPage() {
           livePulse={livePulse}
         />
         <div className="pair-chips">
-          {pairs.slice(0, 15).map((p) => (
+          {pairs.slice(0, 20).map((p) => (
             <button
               key={p}
               type="button"

@@ -18,7 +18,7 @@ import {
 } from "lightweight-charts";
 import type { Candle } from "@/types/market";
 import { ema, sma } from "@/lib/indicators";
-import { roundPrice } from "@/lib/live-candle";
+import { priceDigits, roundPrice } from "@/lib/live-candle";
 
 export type ChartTool = "cursor" | "hline" | "trend" | "measure";
 export type IndicatorId = "volume" | "ema9" | "ema21" | "sma50";
@@ -94,11 +94,6 @@ function safeApplyOptions(
 
 function fmtPrice(n: number, digits: number) {
   return n.toFixed(digits);
-}
-
-function priceDigits(symbol: string) {
-  if (symbol.includes("JPY") || symbol.startsWith("XAU")) return 3;
-  return 5;
 }
 
 const INDICATOR_META: Record<IndicatorId, { label: string; color: string }> = {

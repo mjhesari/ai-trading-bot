@@ -33,9 +33,11 @@ class Settings(BaseSettings):
     lookback_period: str = "730d"
     # Primary real source on Mac / Linux / VPS. Options: yahoo | twelvedata | auto | sample
     data_source: str = "yahoo"
+    # IANA zone used to display FX session hours (sessions themselves stay UTC).
+    session_timezone: str = "UTC"
     forex_pairs: str = (
         "EURUSD,GBPUSD,USDJPY,USDCHF,AUDUSD,USDCAD,NZDUSD,"
-        "EURGBP,EURJPY,GBPJPY,AUDJPY,EURAUD,EURCHF,GBPCHF,XAUUSD"
+        "EURGBP,EURJPY,GBPJPY,AUDJPY,EURAUD,EURCHF,GBPCHF,XAUUSD,SPX"
     )
 
     # Optional second real API (https://twelvedata.com — free key)

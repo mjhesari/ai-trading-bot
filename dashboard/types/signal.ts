@@ -10,6 +10,20 @@ export type TradingSignal = {
   confidence: number;
   reasons: string[];
   time?: string | null;
+  outcome?: "OPEN" | "SL" | "TP1" | "TP2" | string | null;
+  correct?: boolean | null;
+  exitPrice?: number | null;
+  exitTime?: string | null;
+  barsHeld?: number | null;
+  rMultiple?: number | null;
+};
+
+export type SignalStats = {
+  total: number;
+  wins: number;
+  losses: number;
+  open: number;
+  winRate: number | null;
 };
 
 export type SignalsResponse = {
@@ -19,5 +33,6 @@ export type SignalsResponse = {
   message?: string | null;
   bars?: number;
   count: number;
+  stats?: SignalStats;
   signals: TradingSignal[];
 };

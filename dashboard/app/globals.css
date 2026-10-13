@@ -462,6 +462,23 @@
   border-color: rgba(37, 99, 235, 0.4);
 }
 
+.signal-card.is-win {
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.signal-card.is-loss {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.signal-outcome-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
 .dir-badge {
   min-width: 64px;
   text-align: center;
@@ -790,6 +807,75 @@ th {
   background: var(--brand);
   border-color: transparent;
   font-weight: 700;
+}
+
+.session-clock {
+  margin-bottom: 1rem;
+}
+
+.session-clock.compact {
+  padding: 0.9rem 1rem;
+}
+
+.session-clock-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.session-clock-now {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.session-clock-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.session-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.session-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 7.5rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.7rem;
+  border: 1px solid var(--line);
+  background: rgba(7, 11, 20, 0.45);
+}
+
+.session-chip.active {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: var(--buy-dim);
+}
+
+.session-chip-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.session-chip-hours {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.session-chip.active .session-chip-hours {
+  color: var(--text);
 }
 
 .quick-links {

@@ -1,5 +1,6 @@
 .env
 .env.local
+.env.*
 .DS_Store
 __pycache__/
 *.pyc
@@ -11,3 +12,4 @@ node_modules/
 dist/
 build/
 .pytest_cache/
+

@@ -1,6 +1,7 @@
 import { apiGet, apiPost, apiPut, ENGINE_URL } from "@/lib/api";
 import type { BacktestReport, BacktestRequest } from "@/types/backtest";
 import type { MarketResponse, Mt5Status, PairsResponse, QuoteResponse } from "@/types/market";
+import type { SessionSnapshot } from "@/types/session";
 import type { EngineSettings, SettingsUpdate, SourceTestResult } from "@/types/settings";
 import type { SignalsResponse } from "@/types/signal";
 
@@ -33,6 +34,7 @@ export function getSignals(params?: {
   symbol?: string;
   timeframe?: string;
   source?: string;
+  strategy?: string;
   useSample?: boolean;
 }) {
   const q = new URLSearchParams();
@@ -40,6 +42,7 @@ export function getSignals(params?: {
   if (params?.timeframe) q.set("timeframe", params.timeframe);
   if (params?.source) q.set("source", params.source);
   else if (params?.useSample !== undefined) q.set("use_sample", String(params.useSample));
+  if (params?.strategy) q.set("strategy", params.strategy);
   return apiGet<SignalsResponse>(`/api/signals?${q.toString()}`);
 }
 
@@ -71,6 +74,10 @@ export function getQuote(
 
 export function getPairs() {
   return apiGet<PairsResponse>("/api/market/pairs");
+}
+
+export function getSessions() {
+  return apiGet<SessionSnapshot>("/api/market/sessions");
 }
 
 export function getMt5Status() {

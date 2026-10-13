@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query
 
+from app.core.runtime_config import get_runtime_config
 from app.market.provider import frame_to_rows, list_watchlist, load_candles
 from app.market.quote import get_live_quote, patch_forming_candle
+from app.market.session import session_snapshot
 from app.market.symbol import normalize_symbol
 from app.market.timeframe import TIMEFRAME_OPTIONS, normalize_timeframe
 
@@ -15,6 +17,13 @@ router = APIRouter(tags=["market"])
 @router.get("/api/market/timeframes")
 def list_timeframes() -> dict:
     return {"timeframes": TIMEFRAME_OPTIONS}
+
+
+@router.get("/api/market/sessions")
+def get_sessions() -> dict:
+    """Current FX sessions with hours converted to the configured display timezone."""
+    cfg = get_runtime_config()
+    return session_snapshot(cfg.session_timezone)
 
 
 @router.get("/api/market/pairs")

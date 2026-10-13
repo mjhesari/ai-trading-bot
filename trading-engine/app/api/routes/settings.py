@@ -15,6 +15,10 @@ class SettingsUpdate(BaseModel):
     dataSource: str | None = Field(default=None, description="yahoo|twelvedata|auto|sample")
     twelveDataApiKey: str | None = Field(default=None, description="Leave empty to keep current key")
     clearTwelveDataApiKey: bool = False
+    sessionTimezone: str | None = Field(
+        default=None,
+        description="IANA timezone for displaying FX session hours, e.g. Asia/Tehran",
+    )
 
 
 @router.get("/api/settings")
@@ -29,6 +33,7 @@ def put_settings_api(body: SettingsUpdate) -> dict:
             data_source=body.dataSource,
             twelve_data_api_key=body.twelveDataApiKey,
             clear_twelve_key=body.clearTwelveDataApiKey,
+            session_timezone=body.sessionTimezone,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

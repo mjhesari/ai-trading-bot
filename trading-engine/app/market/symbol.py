@@ -10,11 +10,24 @@ YAHOO_ALIASES = {
     "GOLD": "GC=F",
     "XAGUSD": "SI=F",
     "SILVER": "SI=F",
+    "SPX": "^GSPC",
+}
+
+# Broker / vendor names → canonical app symbol
+_CANONICAL = {
+    "SPX": "SPX",
+    "SPX500": "SPX",
+    "SP500": "SPX",
+    "US500": "SPX",
+    "GSPC": "SPX",
+    "SPY": "SPX",
 }
 
 
 def normalize_symbol(symbol: str) -> str:
     s = symbol.strip().upper().replace("/", "").replace("-", "").replace("_", "")
+    if s.startswith("^"):
+        s = s[1:]
     if s.endswith(YAHOO_FOREX_SUFFIX):
         return s[: -len(YAHOO_FOREX_SUFFIX)]
     if s.endswith("=F"):
@@ -23,7 +36,7 @@ def normalize_symbol(symbol: str) -> str:
             return "XAUUSD"
         if s == "SI=F":
             return "XAGUSD"
-    return s
+    return _CANONICAL.get(s, s)
 
 
 def to_yahoo_symbol(symbol: str) -> str:
@@ -45,6 +58,8 @@ def to_twelvedata_symbol(symbol: str) -> str:
         return "XAU/USD"
     if s == "XAGUSD":
         return "XAG/USD"
+    if s == "SPX":
+        return "SPX"
     if len(s) == 6 and s.isalpha():
         return f"{s[:3]}/{s[3:]}"
     return s
